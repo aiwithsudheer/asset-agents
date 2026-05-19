@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\AI\\\\asset-agents\\\\agents\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\AI\\\\asset-agents\\\\tools\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\AI\\\\asset-agents\\\\api\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\AI\\\\asset-agents\\\\data\\\\chroma\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\AI\\\\asset-agents\\\\tests\")",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\AI\\\\asset-agents\" -Recurse | Where-Object { !$_.PSIsContainer } | ForEach-Object { $_.FullName.Replace\\(\"c:\\\\AI\\\\asset-agents\\\\\",\"\"\\) } | Sort-Object)"
+    ]
+  }
+}
