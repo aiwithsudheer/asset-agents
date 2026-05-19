@@ -5,6 +5,7 @@ from typing import Literal
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 from google.adk.runners import Runner
 from google.adk.sessions import DatabaseSessionService
 from google.genai import types as genai_types
@@ -16,7 +17,7 @@ from agents.client_agent import build_initial_message, generate_client_response
 load_dotenv()
 
 APP_NAME = "investment_advisor"
-SESSION_DB_URL = "sqlite:///./data/sessions.db"
+SESSION_DB_URL = "sqlite+aiosqlite:///./data/sessions.db"
 MAX_TURNS = 12
 
 os.makedirs("./data", exist_ok=True)
@@ -153,6 +154,13 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Multi-Agent Investment Advisory System", lifespan=lifespan)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # ---------------------------------------------------------------------------
 # Routes
@@ -171,7 +179,7 @@ async def start_session(request: SessionStartRequest):
     session_id = str(uuid.uuid4())
     user_id = f"user_{session_id}"
 
-    session_service.create_session(
+    await session_service.create_session(
         app_name=APP_NAME,
         user_id=user_id,
         session_id=session_id,

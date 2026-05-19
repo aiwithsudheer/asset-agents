@@ -7,7 +7,11 @@
       "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\AI\\\\asset-agents\\\\api\")",
       "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\AI\\\\asset-agents\\\\data\\\\chroma\")",
       "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\AI\\\\asset-agents\\\\tests\")",
-      "PowerShell(Get-ChildItem -Path \"c:\\\\AI\\\\asset-agents\" -Recurse | Where-Object { !$_.PSIsContainer } | ForEach-Object { $_.FullName.Replace\\(\"c:\\\\AI\\\\asset-agents\\\\\",\"\"\\) } | Sort-Object)"
+      "PowerShell(Get-ChildItem -Path \"c:\\\\AI\\\\asset-agents\" -Recurse | Where-Object { !$_.PSIsContainer } | ForEach-Object { $_.FullName.Replace\\(\"c:\\\\AI\\\\asset-agents\\\\\",\"\"\\) } | Sort-Object)",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\AI\\\\asset-agents\\\\ui\\\\src\\\\types\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\AI\\\\asset-agents\\\\ui\\\\src\\\\hooks\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\AI\\\\asset-agents\\\\ui\\\\src\\\\components\\\\messages\")",
+      "Bash(npx tsc *)"
     ]
   }
 }

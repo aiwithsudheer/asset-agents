@@ -1,5 +1,9 @@
 """Tests for individual agent components."""
 import pytest
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 SAMPLE_PROFILE = {
     "name": "Jordan Lee",
