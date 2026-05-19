@@ -4,9 +4,7 @@ A multi-agent conversational system where three AI agents collaborate to deliver
 
 Built with **Google ADK**, **Anthropic Claude**, **FastAPI WebSockets**, **ChromaDB**, and **SQLite**.
 
-<div style="position: relative; padding-bottom: 56.25%; height: 0;">
-    <iframe id="js_video_iframe" src="https://jumpshare.com/embed/GdzbmtxtrTN9CVxh3b0w" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
-</iframe></div>
+<video src="https://jumpshare.com/embed/GdzbmtxtrTN9CVxh3b0w" controls width="100%"></video>
 
 ---
 
