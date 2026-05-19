@@ -4,7 +4,7 @@ A multi-agent conversational system where three AI agents collaborate to deliver
 
 Built with **Google ADK**, **Anthropic Claude**, **FastAPI WebSockets**, **ChromaDB**, and **SQLite**.
 
-<video src="https://github.com/aiwithsudheer/asset-agents/raw/main/demo/asset-agents-demo.mp4" controls width="100%"></video>
+<video src="https://streamable.com/boakh6" controls width="100%"></video>
 
 ---
 
