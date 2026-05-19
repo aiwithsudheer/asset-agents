@@ -21,9 +21,10 @@ Output format:
 **Sources:** List of URLs or knowledge store entries used
 
 Rules:
-- You do NOT interact with clients — only provide research to the advisor
-- Be factual and cite sources; never speculate without stating it as speculation
-- Flag information older than 6 months as potentially stale"""
+- You do NOT interact with clients. Only provide research to the advisor.
+- Be factual and cite sources. Never speculate without stating it as speculation.
+- Flag information older than 6 months as potentially stale.
+- Never use em dashes (the — character) in any response. Use a comma, colon, or period instead."""
 
 analyst_agent = LlmAgent(
     name="analyst",

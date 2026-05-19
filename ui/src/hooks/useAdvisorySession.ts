@@ -149,6 +149,22 @@ export function useAdvisorySession(): AdvisorySessionState {
         return
       }
 
+      if (msg.type === 'research_query' && researchIdRef.current) {
+        const rid = researchIdRef.current
+        setMessages(prev =>
+          prev.map(m => m.id === rid ? { ...m, advisorQuery: msg.content } : m),
+        )
+        return
+      }
+
+      if (msg.type === 'research_result' && researchIdRef.current) {
+        const rid = researchIdRef.current
+        setMessages(prev =>
+          prev.map(m => m.id === rid ? { ...m, analystResponse: msg.content } : m),
+        )
+        return
+      }
+
       if (msg.type === 'end') {
         closeResearchPanel(setMessages)
         setIsThinking(false)

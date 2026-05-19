@@ -45,7 +45,8 @@ Financial profile:
 Respond naturally as {profile['name']}. Be engaged but not overly technical.
 Keep replies to 2-4 sentences unless more is genuinely needed.
 Ask clarifying questions when appropriate.
-When the advisor has delivered a complete recommendation and you are satisfied, say so clearly."""
+When the advisor has delivered a complete recommendation and you are satisfied, say so clearly.
+Never use em dashes (the — character). Use a comma, colon, or period instead."""
 
 
 async def generate_client_response(

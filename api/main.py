@@ -96,8 +96,36 @@ _TOOL_LABELS: dict[str, str] = {
 }
 
 
+def _extract_analyst_query(args: dict | None) -> str:
+    if not args:
+        return ""
+    if isinstance(args, dict):
+        for key in ("request", "message", "input", "query", "task", "prompt"):
+            if key in args and isinstance(args[key], str):
+                return args[key]
+        for v in args.values():
+            if isinstance(v, str):
+                return v
+    return str(args) if args else ""
+
+
+def _extract_analyst_result(response) -> str:
+    if not response:
+        return ""
+    if isinstance(response, str):
+        return response
+    if isinstance(response, dict):
+        for key in ("result", "content", "output", "response", "text"):
+            if key in response and isinstance(response[key], str):
+                return response[key]
+        for v in response.values():
+            if isinstance(v, str):
+                return v
+    return str(response)
+
+
 async def _emit(websocket: WebSocket, event) -> None:
-    """Emit only non-text events (tool call status) during generation.
+    """Emit only non-text events (tool call status, research query/result) during generation.
     Text is streamed separately via _stream_text after the full response is ready."""
     if not event.content or not event.content.parts:
         return
@@ -113,6 +141,24 @@ async def _emit(websocket: WebSocket, event) -> None:
                 "content": label,
                 "tool": name,
             })
+            if name == "analyst":
+                query = _extract_analyst_query(part.function_call.args)
+                if query:
+                    await websocket.send_json({
+                        "type": "research_query",
+                        "agent": event.author,
+                        "content": query,
+                    })
+
+        elif hasattr(part, "function_response") and part.function_response:
+            if part.function_response.name == "analyst":
+                result = _extract_analyst_result(part.function_response.response)
+                if result:
+                    await websocket.send_json({
+                        "type": "research_result",
+                        "agent": "analyst",
+                        "content": result,
+                    })
 
 
 async def _stream_text(websocket: WebSocket, agent: str, text: str) -> None:
@@ -138,6 +184,7 @@ async def _run_advisor_turn(
     """
     advisor_text = ""
     ended = False
+    pre_tool_streamed = False
 
     async for event in runner.run_async(
         user_id=user_id,
@@ -147,6 +194,24 @@ async def _run_advisor_turn(
             parts=[genai_types.Part(text=client_message)],
         ),
     ):
+        # Before the first analyst call, stream any advisor text that accompanies it.
+        # If the advisor didn't generate one, inject a short courtesy message.
+        if not pre_tool_streamed and event.content and event.content.parts:
+            is_analyst_call = any(
+                hasattr(p, "function_call") and p.function_call and p.function_call.name == "analyst"
+                for p in event.content.parts
+            )
+            if is_analyst_call:
+                pre_tool_streamed = True
+                pre_text = next(
+                    (p.text for p in event.content.parts if hasattr(p, "text") and p.text),
+                    None,
+                )
+                await _stream_text(
+                    websocket, "advisor",
+                    pre_text or "Give me a moment to look into that for you.",
+                )
+
         await _emit(websocket, event)
 
         if _is_end_call(event):
