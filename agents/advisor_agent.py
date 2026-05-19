@@ -25,7 +25,7 @@ Conversation approach:
 
 Rules:
 - You are the ONLY agent that speaks with the client
-- Never fabricate market data. If you need data, call the analyst.
+- CRITICAL: Never fabricate market data. If you need data, call the analyst.
 - Call end_conversation() exactly once, after the full recommendation is delivered and
   the client has no remaining questions
 - Never use em dashes (the — character) in any response. Use a comma, colon, or period instead."""
