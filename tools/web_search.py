@@ -14,8 +14,8 @@ async def web_search(query: str) -> str:
     client = AsyncTavilyClient(api_key=os.environ["TAVILY_API_KEY"])
     response = await client.search(
         query=query,
-        search_depth="advanced",
-        max_results=5,
+        search_depth="basic",
+        max_results=3,
         include_answer=True,
     )
 

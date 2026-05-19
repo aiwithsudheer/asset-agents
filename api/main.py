@@ -88,6 +88,14 @@ def _extract_text(event) -> str | None:
     return None
 
 
+_TOOL_LABELS: dict[str, str] = {
+    "analyst": "Consulting analyst…",
+    "query_knowledge_store": "Checking knowledge base…",
+    "web_search": "Searching the web…",
+    "add_to_knowledge_store": "Saving to knowledge base…",
+}
+
+
 async def _emit(websocket: WebSocket, event) -> None:
     """Emit only non-text events (tool call status) during generation.
     Text is streamed separately via _stream_text after the full response is ready."""
@@ -96,12 +104,15 @@ async def _emit(websocket: WebSocket, event) -> None:
     for part in event.content.parts:
         if hasattr(part, "function_call") and part.function_call:
             name = part.function_call.name
-            if name != "end_conversation":
-                await websocket.send_json({
-                    "type": "status",
-                    "agent": event.author,
-                    "content": f"Calling {name.replace('_', ' ')}…",
-                })
+            if name == "end_conversation":
+                continue
+            label = _TOOL_LABELS.get(name, f"Calling {name.replace('_', ' ')}…")
+            await websocket.send_json({
+                "type": "status",
+                "agent": event.author,
+                "content": label,
+                "tool": name,
+            })
 
 
 async def _stream_text(websocket: WebSocket, agent: str, text: str) -> None:
@@ -159,6 +170,9 @@ async def _run_advisor_turn(
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     os.makedirs("./data/chroma", exist_ok=True)
+    # Pre-warm ChromaDB so the first tool call doesn't pay the init cost
+    from tools.knowledge_store import _get_collection
+    _get_collection()
     yield
 
 

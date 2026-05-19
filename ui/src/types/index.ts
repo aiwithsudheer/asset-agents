@@ -27,6 +27,7 @@ export interface WSMessage {
   type: 'message' | 'delta' | 'status' | 'end' | 'error'
   agent: 'client' | 'advisor' | 'analyst' | 'system'
   content: string
+  tool?: string
 }
 
 export interface ResearchStep {

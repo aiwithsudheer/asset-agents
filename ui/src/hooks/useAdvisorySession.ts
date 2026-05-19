@@ -92,36 +92,59 @@ export function useAdvisorySession(): AdvisorySessionState {
 
       if (msg.type === 'status') {
         setIsThinking(false)
-        if (!researchIdRef.current) {
-          const researchId = uid()
-          researchIdRef.current = researchId
-          setMessages(prev => [
-            ...prev,
-            {
-              id: researchId,
-              kind: 'research',
-              researchSteps: [{ id: uid(), content: msg.content, done: false }],
-              researchComplete: false,
-              timestamp: new Date().toISOString(),
-            },
-          ])
+        const isTopLevel = msg.tool === 'analyst'
+
+        if (isTopLevel) {
+          // Open the research panel; don't add "Consulting analyst" as a step
+          if (!researchIdRef.current) {
+            const researchId = uid()
+            researchIdRef.current = researchId
+            setMessages(prev => [
+              ...prev,
+              {
+                id: researchId,
+                kind: 'research',
+                researchSteps: [],
+                researchComplete: false,
+                timestamp: new Date().toISOString(),
+              },
+            ])
+          }
+          // Second analyst call while panel already open → ignore
         } else {
-          const rid = researchIdRef.current
-          setMessages(prev =>
-            prev.map(m => {
-              if (m.id !== rid) return m
-              const steps: ResearchStep[] = m.researchSteps ?? []
-              return {
-                ...m,
-                researchSteps: [
-                  ...steps.map((s, i) =>
-                    i === steps.length - 1 ? { ...s, done: true } : s,
-                  ),
-                  { id: uid(), content: msg.content, done: false },
-                ],
-              }
-            }),
-          )
+          // Sub-tool step (web_search, query_knowledge_store, etc.)
+          if (!researchIdRef.current) {
+            // Fallback: panel not open yet, create it
+            const researchId = uid()
+            researchIdRef.current = researchId
+            setMessages(prev => [
+              ...prev,
+              {
+                id: researchId,
+                kind: 'research',
+                researchSteps: [{ id: uid(), content: msg.content, done: false }],
+                researchComplete: false,
+                timestamp: new Date().toISOString(),
+              },
+            ])
+          } else {
+            const rid = researchIdRef.current
+            setMessages(prev =>
+              prev.map(m => {
+                if (m.id !== rid) return m
+                const steps: ResearchStep[] = m.researchSteps ?? []
+                return {
+                  ...m,
+                  researchSteps: [
+                    ...steps.map((s, i) =>
+                      i === steps.length - 1 ? { ...s, done: true } : s,
+                    ),
+                    { id: uid(), content: msg.content, done: false },
+                  ],
+                }
+              }),
+            )
+          }
         }
         return
       }
