@@ -20,8 +20,7 @@ interface Props {
 export function ResearchPanel({ message }: Props) {
   const steps = message.researchSteps ?? []
   const complete = message.researchComplete
-  // Active panels start expanded so the user sees progress; completed panels start collapsed.
-  const [expanded, setExpanded] = useState(!complete)
+  const [expanded, setExpanded] = useState(false)
 
   const hasContent = steps.length > 0 || message.advisorQuery || message.analystResponse
 
