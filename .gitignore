@@ -11,3 +11,5 @@ data/sessions.db
 data/chroma/
 node_modules/
 ui/node_modules/
+
+demo/demo-un-cut.mp4
