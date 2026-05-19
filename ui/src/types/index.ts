@@ -24,7 +24,7 @@ export interface ClientProfile {
 }
 
 export interface WSMessage {
-  type: 'message' | 'status' | 'end' | 'error'
+  type: 'message' | 'delta' | 'status' | 'end' | 'error'
   agent: 'client' | 'advisor' | 'analyst' | 'system'
   content: string
 }
@@ -44,6 +44,7 @@ export interface UIMessage {
   researchSteps?: ResearchStep[]
   researchComplete?: boolean
   timestamp: string
+  streaming?: boolean
 }
 
 export interface StoredSession {

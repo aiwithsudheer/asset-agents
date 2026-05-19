@@ -26,8 +26,8 @@ export function useAdvisorySession(): AdvisorySessionState {
   const [error, setError] = useState<string | null>(null)
 
   const wsRef = useRef<WebSocket | null>(null)
-  // Tracks the ID of the currently open research panel
   const researchIdRef = useRef<string | null>(null)
+  const streamingRef = useRef<{ id: string; agent: 'advisor' | 'client' } | null>(null)
 
   const closeResearchPanel = useCallback((setMsgs: typeof setMessages) => {
     if (!researchIdRef.current) return
@@ -48,19 +48,44 @@ export function useAdvisorySession(): AdvisorySessionState {
 
   const handleMessage = useCallback(
     (msg: WSMessage) => {
+      // Streaming chunk — append to in-progress message bubble
+      if (msg.type === 'delta' && (msg.agent === 'advisor' || msg.agent === 'client')) {
+        const agent = msg.agent as 'advisor' | 'client'
+        setIsThinking(false)
+        if (!streamingRef.current || streamingRef.current.agent !== agent) {
+          closeResearchPanel(setMessages)
+          const id = uid()
+          streamingRef.current = { id, agent }
+          setMessages(prev => [
+            ...prev,
+            { id, kind: agent, content: msg.content, timestamp: new Date().toISOString(), streaming: true },
+          ])
+        } else {
+          const { id } = streamingRef.current
+          setMessages(prev =>
+            prev.map(m => m.id === id ? { ...m, content: (m.content ?? '') + msg.content } : m),
+          )
+        }
+        return
+      }
+
+      // Complete message — finalize streaming bubble or create new one
       if (msg.type === 'message' && (msg.agent === 'client' || msg.agent === 'advisor')) {
+        const agent = msg.agent as 'advisor' | 'client'
         closeResearchPanel(setMessages)
         setIsThinking(false)
-        setMessages(prev => [
-          ...prev,
-          {
-            id: uid(),
-            kind: msg.agent as 'client' | 'advisor',
-            content: msg.content,
-            timestamp: new Date().toISOString(),
-          },
-        ])
-        // After any message the other party starts processing
+        if (streamingRef.current?.agent === agent) {
+          const { id } = streamingRef.current
+          streamingRef.current = null
+          setMessages(prev =>
+            prev.map(m => m.id === id ? { ...m, content: msg.content, streaming: false } : m),
+          )
+        } else {
+          setMessages(prev => [
+            ...prev,
+            { id: uid(), kind: agent, content: msg.content, timestamp: new Date().toISOString() },
+          ])
+        }
         setIsThinking(true)
         return
       }
@@ -133,6 +158,7 @@ export function useAdvisorySession(): AdvisorySessionState {
       setIsComplete(false)
       setError(null)
       researchIdRef.current = null
+      streamingRef.current = null
 
       wsRef.current?.close()
       wsRef.current = null

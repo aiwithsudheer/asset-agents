@@ -1,4 +1,6 @@
+import asyncio
 import os
+import re
 import uuid
 from contextlib import asynccontextmanager
 from typing import Literal
@@ -87,16 +89,12 @@ def _extract_text(event) -> str | None:
 
 
 async def _emit(websocket: WebSocket, event) -> None:
+    """Emit only non-text events (tool call status) during generation.
+    Text is streamed separately via _stream_text after the full response is ready."""
     if not event.content or not event.content.parts:
         return
     for part in event.content.parts:
-        if hasattr(part, "text") and part.text:
-            await websocket.send_json({
-                "type": "message",
-                "agent": event.author,
-                "content": part.text,
-            })
-        elif hasattr(part, "function_call") and part.function_call:
+        if hasattr(part, "function_call") and part.function_call:
             name = part.function_call.name
             if name != "end_conversation":
                 await websocket.send_json({
@@ -104,6 +102,15 @@ async def _emit(websocket: WebSocket, event) -> None:
                     "agent": event.author,
                     "content": f"Calling {name.replace('_', ' ')}…",
                 })
+
+
+async def _stream_text(websocket: WebSocket, agent: str, text: str) -> None:
+    """Stream text word-by-word as delta events, then send the complete message."""
+    chunks = re.findall(r'\S+\s*', text)
+    for chunk in chunks:
+        await websocket.send_json({"type": "delta", "agent": agent, "content": chunk})
+        await asyncio.sleep(0.025)
+    await websocket.send_json({"type": "message", "agent": agent, "content": text})
 
 
 async def _run_advisor_turn(
@@ -138,6 +145,9 @@ async def _run_advisor_turn(
             text = _extract_text(event)
             if text:
                 advisor_text = text
+
+    if advisor_text:
+        await _stream_text(websocket, "advisor", advisor_text)
 
     return advisor_text, ended
 
@@ -217,11 +227,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
     current_client_msg = build_initial_message(profile)
 
     try:
-        await websocket.send_json({
-            "type": "message",
-            "agent": "client",
-            "content": current_client_msg,
-        })
+        await _stream_text(websocket, "client", current_client_msg)
 
         for _ in range(MAX_TURNS):
             advisor_text, ended = await _run_advisor_turn(
@@ -237,11 +243,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
             current_client_msg = await generate_client_response(client_history, profile)
             client_history.append({"role": "assistant", "content": current_client_msg})
 
-            await websocket.send_json({
-                "type": "message",
-                "agent": "client",
-                "content": current_client_msg,
-            })
+            await _stream_text(websocket, "client", current_client_msg)
 
         await websocket.send_json({
             "type": "end",

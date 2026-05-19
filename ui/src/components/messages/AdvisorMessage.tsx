@@ -1,4 +1,5 @@
 import type { UIMessage } from '../../types'
+import { MarkdownText } from '../MarkdownText'
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
@@ -22,7 +23,10 @@ export function AdvisorMessage({ message }: Props) {
           <span className="text-xs text-gray-400">{formatTime(message.timestamp)}</span>
         </div>
         <div className="bg-white border border-gray-200 border-l-2 border-l-blue-600 rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-gray-800 leading-relaxed shadow-sm">
-          {message.content}
+          <MarkdownText text={message.content ?? ''} />
+          {message.streaming && (
+            <span className="inline-block w-0.5 h-3.5 bg-blue-500 ml-0.5 align-middle animate-pulse" />
+          )}
         </div>
       </div>
     </div>
