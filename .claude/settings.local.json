@@ -13,7 +13,14 @@
       "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\AI\\\\asset-agents\\\\ui\\\\src\\\\components\\\\messages\")",
       "Bash(npx tsc *)",
       "Bash(git rm *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(Remove-Item -Path \"data\\\\sessions.db\" -Force -ErrorAction SilentlyContinue)",
+      "Bash(Remove-Item -Path \"data\\\\chroma\" -Recurse -Force -ErrorAction SilentlyContinue)",
+      "Bash(New-Item -ItemType Directory -Path \"data\\\\chroma\" -Force)",
+      "Bash(Out-Null)",
+      "Bash(Write-Host \"Done\")",
+      "Bash(git add *)",
+      "Bash(git reset *)"
     ]
   }
 }
