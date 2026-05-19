@@ -1,7 +1,32 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { CheckCircleIcon, ChevronRightIcon, SearchIcon, DatabaseIcon, SaveIcon } from 'lucide-react'
 import type { UIMessage, ResearchStep } from '../../types'
 import { MarkdownText } from '../MarkdownText'
+
+const ANALYST_MSGS = [
+  "Analyzing market conditions…",
+  "Scanning recent filings…",
+  "Running the numbers…",
+  "Checking sector performance…",
+  "Reasoning through your portfolio…",
+  "Cross-referencing data sources…",
+  "Be right with you in a moment…",
+  "Reviewing portfolio fit…",
+  "Synthesizing findings…",
+  "Almost there…",
+  "Consulting research databases…",
+  "Comparing asset allocations…",
+]
+
+function useCyclingMessage(active: boolean): { text: string; idx: number } {
+  const [idx, setIdx] = useState(0)
+  useEffect(() => {
+    if (!active) return
+    const id = setInterval(() => setIdx(i => (i + 1) % ANALYST_MSGS.length), 2500)
+    return () => clearInterval(id)
+  }, [active])
+  return { text: ANALYST_MSGS[idx], idx }
+}
 
 function StepIcon({ step }: { step: ResearchStep }) {
   const c = step.content.toLowerCase()
@@ -19,8 +44,9 @@ interface Props {
 
 export function ResearchPanel({ message }: Props) {
   const steps = message.researchSteps ?? []
-  const complete = message.researchComplete
+  const complete = message.researchComplete ?? false
   const [expanded, setExpanded] = useState(false)
+  const { text: cyclingMsg, idx: cyclingIdx } = useCyclingMessage(!complete)
 
   const hasContent = steps.length > 0 || message.advisorQuery || message.analystResponse
 
@@ -112,20 +138,33 @@ export function ResearchPanel({ message }: Props) {
             </div>
           )}
           {steps.length === 0 ? (
-            <p className="mt-2 text-xs text-amber-700">Consulting analyst…</p>
+            <p
+              key={cyclingIdx}
+              className="mt-2 text-xs text-amber-700 font-medium animate-fade-in"
+            >
+              {cyclingMsg}
+            </p>
           ) : (
-            <div className="mt-2 space-y-2">
-              {steps.map(step => (
-                <div key={step.id} className="flex items-start gap-2">
-                  <StepIcon step={step} />
-                  <span className={`text-xs leading-relaxed ${
-                    step.done ? 'text-amber-700' : 'text-amber-800 font-medium'
-                  }`}>
-                    {step.content}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <>
+              <div className="mt-2 space-y-2">
+                {steps.map(step => (
+                  <div key={step.id} className="flex items-start gap-2">
+                    <StepIcon step={step} />
+                    <span className={`text-xs leading-relaxed ${
+                      step.done ? 'text-amber-700' : 'text-amber-800 font-medium'
+                    }`}>
+                      {step.content}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p
+                key={cyclingIdx}
+                className="mt-2.5 text-[11px] text-amber-600/60 italic animate-fade-in"
+              >
+                {cyclingMsg}
+              </p>
+            </>
           )}
         </div>
       )}
