@@ -11,7 +11,9 @@
       "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\AI\\\\asset-agents\\\\ui\\\\src\\\\types\")",
       "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\AI\\\\asset-agents\\\\ui\\\\src\\\\hooks\")",
       "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\AI\\\\asset-agents\\\\ui\\\\src\\\\components\\\\messages\")",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(git rm *)",
+      "Bash(git commit *)"
     ]
   }
 }
